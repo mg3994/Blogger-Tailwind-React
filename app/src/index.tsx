@@ -1,6 +1,8 @@
-﻿import React from "react";
+import React from "react";
 import { createRoot } from "react-dom/client";
 
+// Import robust vanilla orchestrator to run alongside the React Overlays
+import "./main";
 
 import { App } from "./App";
 
