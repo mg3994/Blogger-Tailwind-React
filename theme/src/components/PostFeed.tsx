@@ -11,7 +11,7 @@ export const PostFeed = () => (
           <div className="absolute inset-0 bg-gradient-to-t from-slate-950/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
           <BIf cond="data:post.labels">
             <span className="absolute top-4 left-4 bg-white/90 dark:bg-slate-900/90 backdrop-blur-md text-slate-800 dark:text-slate-100 text-[10px] font-bold px-3 py-1 rounded-lg border border-slate-200/20 shadow-sm">
-              <BData value="post.labels[0].name" />
+              <BEval expr="data:post.labels[0].name" />
             </span>
           </BIf>
         </div>
