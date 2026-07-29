@@ -1,66 +1,31 @@
-import React, { useState } from "react";
+import React from "react";
 import { User, Copy, Check, LogOut } from "lucide-react";
-import { useApp, UserProfile } from "../context/AppContext";
+import { useApp } from "../context/AppContext";
+import { useAuth } from "../hooks/useAuth";
 
 interface AuthModalProps {
   dict: Record<string, string>;
 }
 
 export const AuthModal: React.FC<AuthModalProps> = ({ dict }) => {
-  const { isSessionOpen, setIsSessionOpen, user, setUser, triggerToast } = useApp();
-  const [isSendingOtp, setIsSendingOtp] = useState(false);
-  const [otpSent, setOtpSent] = useState(false);
-  const [otpInput, setOtpInput] = useState("");
-  const [phoneInput, setPhoneInput] = useState("");
-  const [uidCopied, setUidCopied] = useState(false);
+  const { isSessionOpen, setIsSessionOpen } = useApp();
+  const {
+    user,
+    isSendingOtp,
+    otpSent,
+    otpInput,
+    setOtpInput,
+    phoneInput,
+    setPhoneInput,
+    uidCopied,
+    handleGoogleLogin,
+    handleSignOut,
+    handleSendOtp,
+    handleVerifyOtp,
+    handleCopyUid
+  } = useAuth();
 
   if (!isSessionOpen) return null;
-
-  const handleGoogleLogin = () => {
-    setUser({
-      uid: "usr_" + Math.random().toString(36).substring(2, 12) + "_" + Date.now().toString().slice(-4),
-      displayName: "John Doe",
-      email: "anish.sharma@antinna.in",
-      photoURL: "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?q=80&w=120&auto=format&fit=crop"
-    });
-    triggerToast("Secure login established successfully!", "success");
-  };
-
-  const handleSignOut = () => {
-    setUser(null);
-    setOtpSent(false);
-    setPhoneInput("");
-    setOtpInput("");
-    triggerToast("Session signed out cleanly.", "info");
-  };
-
-  const handleSendOtp = () => {
-    if (!phoneInput || phoneInput.length < 10) {
-      triggerToast("Please enter a valid phone number", "error");
-      return;
-    }
-    setIsSendingOtp(true);
-    setTimeout(() => {
-      setIsSendingOtp(false);
-      setOtpSent(true);
-      triggerToast("OTP sent successfully! (Mock OTP: 123456)", "success");
-    }, 1200);
-  };
-
-  const handleVerifyOtp = () => {
-    if (otpInput === "123456") {
-      if (user) {
-        setUser({
-          ...user,
-          phoneNumber: phoneInput
-        });
-      }
-      triggerToast("Phone number linked successfully!", "success");
-      setOtpSent(false);
-    } else {
-      triggerToast("Incorrect OTP. Please try again.", "error");
-    }
-  };
 
   return (
     <div className="fixed inset-0 bg-slate-950/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
@@ -89,7 +54,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({ dict }) => {
               </div>
               <button
                 onClick={handleGoogleLogin}
-                className="w-full flex items-center justify-center gap-2.5 bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 px-4 py-3 rounded-xl font-bold text-sm text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-900 transition-all cursor-pointer shadow-sm hover:scale-[1.01]"
+                className="w-full flex items-center justify-center gap-2.5 bg-white dark:bg-slate-950 border border-slate-200/20 dark:border-slate-800 px-4 py-3 rounded-xl font-bold text-sm text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-900 transition-all cursor-pointer shadow-sm hover:scale-[1.01]"
               >
                 <svg className="w-5 h-5" viewBox="0 0 24 24">
                   <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
@@ -123,12 +88,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({ dict }) => {
                     {user.uid}
                   </span>
                   <button
-                    onClick={() => {
-                      navigator.clipboard.writeText(user.uid);
-                      setUidCopied(true);
-                      triggerToast("UID copied to clipboard!", "success");
-                      setTimeout(() => setUidCopied(false), 2000);
-                    }}
+                    onClick={handleCopyUid}
                     className="text-slate-400 hover:text-indigo-600 cursor-pointer transition-colors flex-shrink-0"
                   >
                     {uidCopied ? <Check className="w-4 h-4 text-emerald-500" /> : <Copy className="w-4 h-4" />}
