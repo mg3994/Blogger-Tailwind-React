@@ -19,7 +19,8 @@
     "build": "npm run build:css && npx tsx --tsconfig tsconfig.theme.json theme/src/main.tsx"
   },
   "dependencies": {
-    "@antinna/blogger-theme": "^5.0.0"
+    "@antinna/blogger-theme": "^5.0.0",
+    "@antinna/schema-ld-types": "^1.0.0"
   },
   "devDependencies": {
     "@tailwindcss/cli": "^4.3.3",

@@ -1,4 +1,3 @@
-
 import * as fs from "fs";
 import * as path from "path";
 import { fileURLToPath } from "node:url";
@@ -8,16 +7,21 @@ import {
   BWidget,
   BClientScript,
   BSkin,
-  Title ,
+  Title,
   BIf,
   BIncludable,
   BInclude,
   BLoop,
   BData,
-  Expr,
-  Data,
   BEval,
 } from "@antinna/blogger-theme";
+
+import { InitScripts } from "./scripts/InitScripts.js";
+import { Sidebar } from "./components/Sidebar.js";
+import { Header } from "./components/Header.js";
+import { CategoryBar } from "./components/CategoryBar.js";
+import { PostFeed } from "./components/PostFeed.js";
+import { PostDetail } from "./components/PostDetail.js";
 
 // Polyfill __dirname for ES Modules
 const __filename = fileURLToPath(import.meta.url);
@@ -29,63 +33,216 @@ const DIST_DIR = path.resolve(ROOT_DIR, "dist");
 const OUTPUT_CSS_PATH = path.resolve(DIST_DIR, "output.css");
 const REACT_APP_ENTRY = path.resolve(ROOT_DIR, "app/src/index.tsx");
 
-const BlogHeader = () => (
-  <header className="header-container" style={{}}>
-    <BSection
-      id="main-header"
-      className="main-header-sec"
-      maxwidgets={1}
-      showaddelement={true}
-    >
-      <BWidget
-        id="Header1"
-        type="Header"
-        title="My React Blog Header"
-        locked={true}
-      />
-    </BSection>
-
-    <BIf cond="data:view.isHomepage">
-      <div className="homepage-banner" cond="data:view.isHomepage">
-        <h1 expr:title="data:blog.title">
-          Welcome to {new BEval({ expr: "data:blog.title" })}!
-        </h1>
-        <p>A cutting-edge blog layout engineered entirely in TypeScript.</p>
-      </div>
-    </BIf>
-  </header>
-);
-
 const BlogLayout = () => (
-  <div className="wrapper-pane">
-    <BlogHeader />
+  <div className="app-container flex w-screen h-screen relative bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-50 overflow-hidden">
+    <div id="sidebar-backdrop" className="fixed inset-0 bg-black/40 backdrop-blur-sm z-40 hidden lg:hidden" onclick="window.toggleSidebarDrawer()" />
 
-    <main className="content-area">
-      <BSection id="main-content-sec">
-        <BWidget id="Blog1" type="Blog">
+    {/* Mounting data loops at root level to satisfy structure validations cleanly */}
+    <div className="ui-hidden">
+      <BSection id="sidebar-primary-links" className="sidebar-shared-nav-section" maxwidgets={1} showaddelement={true}>
+        <BWidget id="LinkList1" type="LinkList" title="Navigation Menu" locked={false}>
           <BIncludable id="main">
-            <BLoop values="data:posts" varName="post">
-              <div className="post-item-view" expr:id="data:post.id">
-                <h2 expr:class="data:post.class">
-                  <a expr:href="data:post.url">
-                    <BData value="post.title" />
+            <ul id="mount-primary-links" className="hidden">
+              <BLoop values="data:links" varName="link">
+                <li className="nav-item">
+                  <a className="nav-route-link block px-4 py-2.5 rounded-xl text-slate-400 font-medium text-sm transition-all hover:bg-slate-800/40 hover:text-slate-100" expr:href="data:link.target">
+                    <BData value="link.name" />
                   </a>
-                </h2>
-                <div className="post-body">
-                  <BData value="post.body" />
-                </div>
-              </div>
-
-              <BInclude name="postShareButtons" data="post" />
-            </BLoop>
+                </li>
+              </BLoop>
+            </ul>
           </BIncludable>
         </BWidget>
       </BSection>
 
-      <div id="react-root"></div>
+      <BSection id="sidebar-workspace-links" className="sidebar-modules-section" maxwidgets={1} showaddelement={true}>
+        <BWidget id="LinkList3" type="LinkList" title="Workspace Menu" locked={false}>
+          <BIncludable id="main">
+            <div id="mount-workspace-links" className="hidden">
+              <span id="mount-workspace-title">
+                <BEval expr='data:title != "" and data:title != " " ? data:title : "Workspaces"' />
+              </span>
+              <ul className="mount-workspace-items">
+                <BLoop values="data:links" varName="link">
+                  <li className="workspace-item">
+                    <a className="nav-route-link block px-4 py-2 rounded-lg text-slate-400 font-medium text-xs hover:bg-slate-800/40 hover:text-slate-100" expr:href="data:link.target">
+                      <BData value="link.name" />
+                    </a>
+                  </li>
+                </BLoop>
+              </ul>
+            </div>
+          </BIncludable>
+        </BWidget>
+      </BSection>
 
-      <BClientScript scriptPath={REACT_APP_ENTRY} mode="cdata" />
-    </main>
+      <BSection id="sidebar-legal-links" className="sidebar-legal-section" maxwidgets={1} showaddelement={true}>
+        <BWidget id="LinkList2" type="LinkList" title="Policies &amp; Legal" locked={false}>
+          <BIncludable id="main">
+            <div id="mount-legal-links" className="hidden">
+              <span id="mount-legal-title">
+                <BEval expr='data:title != "" and data:title != " " ? data:title : "Legal"' />
+              </span>
+              <ul className="mount-legal-items">
+                <BLoop values="data:links" varName="link">
+                  <li className="legal-item">
+                    <a className="nav-route-link block px-4 py-2 rounded-lg text-slate-400 font-medium text-xs hover:bg-slate-800/40 hover:text-slate-100" expr:href="data:link.target">
+                      <BData value="link.name" />
+                    </a>
+                  </li>
+                </BLoop>
+              </ul>
+            </div>
+          </BIncludable>
+        </BWidget>
+      </BSection>
+
+      <BSection id="social-icon-links" className="sidebar-social-wrapper" maxwidgets={1} showaddelement={true}>
+        <BWidget id="LinkList4" type="LinkList" title="Connect with us" locked={false}>
+          <BIncludable id="main">
+            <div id="mount-social-links" className="hidden">
+              <h4 id="mount-social-title">
+                <BEval expr='data:title != "" and data:title != " " ? data:title : "Connect"' />
+              </h4>
+              <div className="mount-social-items">
+                <BLoop values="data:links" varName="link">
+                  <a className="social-icon-link w-8 h-8 flex items-center justify-center rounded-lg bg-slate-800/50 hover:bg-slate-800 text-slate-400 hover:text-amber-500 transition-all duration-200" expr:href="data:link.target" target="_blank" expr:style='"-webkit-mask-image: url(" + data:link.name + "); mask-image: url(" + data:link.name + ");"'>
+                  </a>
+                </BLoop>
+              </div>
+            </div>
+          </BIncludable>
+        </BWidget>
+      </BSection>
+    </div>
+
+    {/* Elegant Sidebar Panel Component */}
+    <Sidebar />
+
+    <div className="main-view-wrapper flex-1 flex flex-col h-screen overflow-hidden relative">
+      {/* Top Navbar Header Component */}
+      <Header />
+
+      {/* Categories Horizontal scrolling label bar */}
+      <CategoryBar />
+
+      {/* Main content viewport layer */}
+      <main className="scrollable-main-content flex-1 overflow-y-auto p-6 lg:p-8">
+        <div className="main-section-wrapper max-w-6xl mx-auto">
+          <BSection id="main-section" className="main-feed-section w-full" showaddelement={true}>
+            <BWidget id="Blog1" type="Blog" title="Blog Posts" locked={true}>
+              <BIncludable id="main">
+                <BIf cond="data:view.isMultipleItems">
+                  {/* Grid layout feed showing beautiful product cards */}
+                  <PostFeed />
+                </BIf>
+
+                <BIf cond="data:view.isSingleItem">
+                  {/* Detail layouts showing single product views */}
+                  <PostDetail />
+                </BIf>
+              </BIncludable>
+            </BWidget>
+          </BSection>
+        </div>
+      </main>
+    </div>
+
+    {/* Shared Global Client React Elements mount placeholder */}
+    <div id="react-root"></div>
+
+    {/* Mount Client Script compiled Bundle via Blogger JSX Client loader */}
+    <BClientScript scriptPath={REACT_APP_ENTRY} mode="cdata" />
+
+    {/* Hamburger menu floating FAB triggers mobile sidebar panel */}
+    <button className="mobile-menu-fab lg:hidden fixed bottom-6 left-6 w-12 h-12 rounded-full bg-slate-900 text-white flex items-center justify-center text-xl shadow-lg border border-slate-800 cursor-pointer z-50 hover:scale-105 transition-transform" onclick="window.toggleSidebarDrawer()">
+      ☰
+    </button>
+
+    <script type="text/javascript">
+      {`//<![CDATA[
+      window.toggleSidebarDrawer = function() {
+          const sidebar = document.getElementById('sidebar-drawer');
+          const backdrop = document.getElementById('sidebar-backdrop');
+
+          if (sidebar && backdrop) {
+              sidebar.classList.toggle('drawer-open');
+              backdrop.classList.toggle('backdrop-active');
+              sidebar.classList.toggle('hidden');
+          }
+      };
+
+      window.toggleModuleDropdown = function(moduleId) {
+          const targetModule = document.getElementById(moduleId);
+          const arrowIndicator = document.getElementById(moduleId + '-arrow');
+
+          if (targetModule) {
+              const isCurrentlyHidden = targetModule.classList.contains('ui-hidden');
+
+              if (isCurrentlyHidden) {
+                  targetModule.classList.remove('ui-hidden');
+                  if (arrowIndicator) {
+                      arrowIndicator.style.transform = 'rotate(0deg)';
+                  }
+              } else {
+                  targetModule.classList.add('ui-hidden');
+                  if (arrowIndicator) {
+                      arrowIndicator.style.transform = 'rotate(-90deg)';
+                  }
+              }
+          }
+      };
+
+      document.addEventListener('DOMContentLoaded', () => {
+          const hiddenNav = document.getElementById('mount-primary-links');
+          const sidebarNav = document.getElementById('sidebar-nav-menu-list');
+          if (hiddenNav && sidebarNav) {
+              sidebarNav.innerHTML = hiddenNav.innerHTML;
+          }
+
+          const hiddenWorkspace = document.querySelector('.mount-workspace-items');
+          const workspaceTitle = document.getElementById('mount-workspace-title');
+          const sidebarWorkspace = document.getElementById('workspace-module');
+          const sidebarWorkspaceTitle = document.getElementById('workspace-dropdown-title');
+          if (hiddenWorkspace && sidebarWorkspace) {
+              sidebarWorkspace.innerHTML = hiddenWorkspace.innerHTML;
+          }
+          if (workspaceTitle && sidebarWorkspaceTitle) {
+              sidebarWorkspaceTitle.textContent = workspaceTitle.textContent;
+          }
+
+          const hiddenLegal = document.querySelector('.mount-legal-items');
+          const legalTitle = document.getElementById('mount-legal-title');
+          const sidebarLegal = document.getElementById('legal-policy-module');
+          const sidebarLegalTitle = document.getElementById('legal-dropdown-title');
+          if (hiddenLegal && sidebarLegal) {
+              sidebarLegal.innerHTML = hiddenLegal.innerHTML;
+          }
+          if (legalTitle && sidebarLegalTitle) {
+              sidebarLegalTitle.textContent = legalTitle.textContent;
+          }
+
+          const hiddenSocial = document.querySelector('.mount-social-items');
+          const socialTitle = document.getElementById('mount-social-title');
+          const sidebarSocial = document.getElementById('sidebar-social-icons');
+          const sidebarSocialTitle = document.getElementById('sidebar-social-title-display');
+          if (hiddenSocial && sidebarSocial) {
+              sidebarSocial.innerHTML = hiddenSocial.innerHTML;
+          }
+          if (socialTitle && sidebarSocialTitle) {
+              sidebarSocialTitle.textContent = socialTitle.textContent;
+          }
+
+          const currentPath = window.location.pathname;
+          document.querySelectorAll('.nav-route-link').forEach(link => {
+              if (link.getAttribute('href') === currentPath) {
+                  link.classList.add('active', 'bg-indigo-600', 'text-white');
+                  link.classList.remove('text-slate-400');
+              }
+          });
+      });
+      //]]>`}
+    </script>
   </div>
 );
 
@@ -101,7 +258,8 @@ function buildTheme() {
       "b:layoutsversion": "3",
     },
     head: [
-      <Title id="ram">React Blogger Theme Example</Title>, 
+      <Title id="ram">Blogger Tailwind React Premium Redesign</Title>,
+      <InitScripts />,
       <BSkin css={OUTPUT_CSS_PATH} />,
     ],
     body: [<BlogLayout />],

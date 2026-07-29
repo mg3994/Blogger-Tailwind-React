@@ -3,3 +3,140 @@
 /* Scan templates across theme and app workspaces */
 @source "../../theme/src/**/*.tsx";
 @source "../../app/src/**/*.tsx";
+
+@theme {
+  --color-indigo-50: #f5f3ff;
+  --color-indigo-100: #ede9fe;
+  --color-indigo-600: #4f46e5;
+  --color-indigo-700: #4338ca;
+  --color-indigo-950: #1e1b4b;
+}
+
+@layer base {
+  body {
+    -webkit-tap-highlight-color: transparent;
+  }
+}
+
+@layer utilities {
+  /* Dynamic Currency-specific Theme Color Accents */
+  :root, html {
+    --color-accent: #f59e0b; /* Saffron Orange default */
+  }
+
+  html.currency-inr {
+    --color-accent: #f59e0b; /* Saffron Orange for INR */
+  }
+
+  html.currency-usd {
+    --color-accent: #10b981; /* Emerald Money Green for USD */
+  }
+
+  html.currency-eur {
+    --color-accent: #3b82f6; /* Royal Blue for EUR */
+  }
+
+  /* Glassmorphism utility */
+  .glass-panel {
+    background: rgba(255, 255, 255, 0.7);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+  }
+
+  .dark .glass-panel {
+    background: rgba(15, 23, 42, 0.7);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+  }
+
+  /* Responsive Drawer Transitions */
+  #sidebar-drawer {
+    transition: left 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  @media (max-width: 1023px) {
+    #sidebar-drawer {
+      position: fixed;
+      top: 0;
+      bottom: 0;
+      left: -280px;
+      z-index: 50;
+      display: flex !important;
+    }
+
+    #sidebar-drawer.drawer-open {
+      left: 0;
+      box-shadow: 10px 0 30px rgba(0, 0, 0, 0.25);
+    }
+  }
+
+  /* Utilities overrides */
+  .ui-hidden {
+    display: none !important;
+  }
+
+  .scrollbar-none::-webkit-scrollbar {
+    display: none;
+  }
+
+  .scrollbar-none {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+
+  /* Smooth slider entry animations */
+  @keyframes slideIn {
+    from {
+      transform: translateX(100%);
+    }
+    to {
+      transform: translateX(0);
+    }
+  }
+
+  @keyframes zoomIn {
+    from {
+      transform: scale(0.95);
+      opacity: 0;
+    }
+    to {
+      transform: scale(1);
+      opacity: 1;
+    }
+  }
+
+  @keyframes slideUpToast {
+    from {
+      transform: translateY(20px);
+      opacity: 0;
+    }
+    to {
+      transform: translateY(0);
+      opacity: 1;
+    }
+  }
+
+  .animate-slide-in {
+    animation: slideIn 0.3s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+  }
+
+  .animate-zoom-in {
+    animation: zoomIn 0.25s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+  }
+
+  .animate-slide-up-toast {
+    animation: slideUpToast 0.35s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+  }
+
+  /* Map-mask definitions for social links */
+  .social-icon-link {
+    display: inline-block;
+    background-color: currentColor;
+    -webkit-mask-repeat: no-repeat;
+    mask-repeat: no-repeat;
+    -webkit-mask-size: contain;
+    mask-size: contain;
+    -webkit-mask-position: center;
+    mask-position: center;
+  }
+}
