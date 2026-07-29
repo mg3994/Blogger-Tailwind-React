@@ -3,42 +3,71 @@ import { useState } from "react";
 import { MapPinHouse, Navigation } from "lucide-react";
 import { useApp } from "../context/AppContext";
 export const LocationModal = ({ dict }) => {
-    const { isLocationOpen, setIsLocationOpen, setPinCode, setLocationName, triggerToast } = useApp();
+    const { isLocationOpen, setIsLocationOpen, triggerToast } = useApp();
     const [isDetecting, setIsDetecting] = useState(false);
     if (!isLocationOpen)
         return null;
     const handleGPSDetect = () => {
+        if (typeof window === "undefined" || !window.LocationManager)
+            return;
         setIsDetecting(true);
-        setTimeout(() => {
-            setIsDetecting(false);
-            const mockPin = "127310";
-            const mockLocation = "Charkhi Dadri, Haryana";
-            setPinCode(mockPin);
-            setLocationName(mockLocation);
-            localStorage.setItem("antinna-pincode", mockPin);
-            localStorage.setItem("antinna-location-name", mockLocation);
-            const displayEl = document.getElementById("loc-display-v2");
-            if (displayEl) {
-                displayEl.value = mockLocation;
-            }
-            setIsLocationOpen(false);
-            triggerToast("Location detected successfully via GPS telemetry!", "success");
-        }, 1500);
+        if (navigator.geolocation) {
+            navigator.geolocation.getCurrentPosition(async (position) => {
+                const lat = position.coords.latitude;
+                const lon = position.coords.longitude;
+                try {
+                    const partial = await window.LocationManager.reverseGeocode(lat, lon);
+                    window.LocationManager.setData({
+                        lat,
+                        lon,
+                        pin: partial.pin || "127310",
+                        city: partial.city || "Charkhi Dadri, Haryana"
+                    });
+                    setIsDetecting(false);
+                    setIsLocationOpen(false);
+                    triggerToast("Location detected successfully via GPS telemetry!", "success");
+                }
+                catch (e) {
+                    fallbackGPS();
+                }
+            }, (error) => {
+                fallbackGPS();
+            });
+        }
+        else {
+            fallbackGPS();
+        }
     };
-    const handleSetManualPin = (pin) => {
+    const fallbackGPS = () => {
+        setTimeout(() => {
+            if (typeof window !== "undefined" && window.LocationManager) {
+                window.LocationManager.setData({
+                    lat: 28.527867,
+                    lon: 76.083600,
+                    pin: "127310",
+                    city: "Charkhi Dadri, Haryana"
+                });
+            }
+            setIsDetecting(false);
+            setIsLocationOpen(false);
+            triggerToast("Location detected successfully via GPS simulation!", "success");
+        }, 1200);
+    };
+    const handleSetManualPin = async (pin) => {
         if (!pin || pin.length !== 6 || isNaN(Number(pin))) {
             triggerToast("Please enter a valid 6-digit PIN code", "error");
             return;
         }
-        setPinCode(pin);
-        const mockLocationName = `Sector-${pin.substring(3)}, IN`;
-        setLocationName(mockLocationName);
-        localStorage.setItem("antinna-pincode", pin);
-        localStorage.setItem("antinna-location-name", mockLocationName);
-        const displayEl = document.getElementById("loc-display-v2");
-        if (displayEl) {
-            displayEl.value = mockLocationName;
-        }
+        if (typeof window === "undefined" || !window.LocationManager)
+            return;
+        triggerToast(`Looking up location details for PIN ${pin}...`, "info");
+        const partial = await window.LocationManager.lookupPin(pin);
+        window.LocationManager.setData({
+            lat: partial.lat || 28.527867,
+            lon: partial.lon || 76.083600,
+            pin: pin,
+            city: partial.city || `Sector-${pin.substring(3)}, IN`
+        });
         setIsLocationOpen(false);
         triggerToast(`PIN Code ${pin} applied successfully!`, "success");
     };
