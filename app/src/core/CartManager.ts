@@ -28,6 +28,7 @@ export class CartManager {
   private saveToStorage(): void {
     this.calculateTotal();
     localStorage.setItem(this.storageKey, JSON.stringify(this.order));
+    window.dispatchEvent(new CustomEvent("cart-updated", { detail: this.order }));
   }
 
   private deduplicate(): void {

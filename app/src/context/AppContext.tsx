@@ -6,6 +6,8 @@ export interface CartItem {
   price: number;
   img: string;
   quantity: number;
+  addOns?: any[];
+  isUnavailable?: boolean;
 }
 
 export interface ToastMessage {
@@ -56,24 +58,61 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const [currency, setCurrency] = useState(() => localStorage.getItem("antinna-currency") || "INR");
 
   const [isCartOpen, setIsCartOpen] = useState(false);
+
+  // Cart items read directly from window.CartManager if instantiated, falling back to localStorage
   const [cartItems, setCartItems] = useState<CartItem[]>(() => {
-    const saved = localStorage.getItem("antinna-cart");
-    return saved ? JSON.parse(saved) : [];
+    if (typeof window !== "undefined" && (window as any).CartManager) {
+      const order = (window as any).CartManager.getOrder();
+      return order?.orderedItem || [];
+    }
+    const saved = localStorage.getItem("antinna_cart_order");
+    if (saved) {
+      try {
+        const order = JSON.parse(saved);
+        return order?.orderedItem || [];
+      } catch (e) {}
+    }
+    return [];
   });
 
   const [isLocationOpen, setIsLocationOpen] = useState(false);
-  const [pinCode, setPinCode] = useState(() => localStorage.getItem("antinna-pincode") || "");
-  const [locationName, setLocationName] = useState(() => localStorage.getItem("antinna-location-name") || "");
+  const [pinCode, setPinCode] = useState(() => {
+    const saved = localStorage.getItem("antinna_location");
+    if (saved) {
+      try { return JSON.parse(saved).pin || ""; } catch (e) {}
+    }
+    return "";
+  });
+  const [locationName, setLocationName] = useState(() => {
+    const saved = localStorage.getItem("antinna_location");
+    if (saved) {
+      try { return JSON.parse(saved).city || ""; } catch (e) {}
+    }
+    return "";
+  });
 
   const [isSessionOpen, setIsSessionOpen] = useState(false);
-  const [user, setUser] = useState<UserProfile | null>(null);
+  const [user, setUser] = useState<UserProfile | null>(() => {
+    const saved = localStorage.getItem("antinna_user_session");
+    return saved ? JSON.parse(saved) : null;
+  });
 
   const [toasts, setToasts] = useState<ToastMessage[]>([]);
 
-  // Local storage persistence
+  // Persistent user session
   useEffect(() => {
-    localStorage.setItem("antinna-cart", JSON.stringify(cartItems));
-  }, [cartItems]);
+    if (user) {
+      localStorage.setItem("antinna_user_session", JSON.stringify(user));
+      (window as any).isLoggedIn = true;
+      (window as any).hasPhoneLinked = !!user.phoneNumber;
+      (window as any).firebaseUid = user.uid;
+    } else {
+      localStorage.removeItem("antinna_user_session");
+      (window as any).isLoggedIn = false;
+      (window as any).hasPhoneLinked = false;
+      (window as any).firebaseUid = null;
+    }
+  }, [user]);
 
   const triggerToast = (msg: string, type: "success" | "error" | "info" = "info") => {
     const id = Math.random().toString(36).substring(2, 9);
@@ -83,8 +122,23 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     }, 4000);
   };
 
-  // Sync with global custom events
+  // Sync with global custom events dispatched by the core Managers
   useEffect(() => {
+    const handleCartUpdated = (e: any) => {
+      const order = e.detail || (window as any).CartManager?.getOrder();
+      if (order && order.orderedItem) {
+        setCartItems([...order.orderedItem]);
+      }
+    };
+
+    const handleLocationUpdated = (e: any) => {
+      const data = e.detail || (window as any).LocationManager?.getData();
+      if (data) {
+        setPinCode(data.pin || "");
+        setLocationName(data.city || "");
+      }
+    };
+
     const handleLocaleChange = () => {
       setLocale(localStorage.getItem("antinna-locale") || "en");
     };
@@ -92,10 +146,14 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       setCurrency(localStorage.getItem("antinna-currency") || "INR");
     };
 
+    window.addEventListener("cart-updated", handleCartUpdated);
+    window.addEventListener("location-updated", handleLocationUpdated);
     window.addEventListener("locale-change", handleLocaleChange);
     window.addEventListener("currency-change", handleCurrencyChange);
 
     return () => {
+      window.removeEventListener("cart-updated", handleCartUpdated);
+      window.removeEventListener("location-updated", handleLocationUpdated);
       window.removeEventListener("locale-change", handleLocaleChange);
       window.removeEventListener("currency-change", handleCurrencyChange);
     };

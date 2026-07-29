@@ -15,6 +15,7 @@ export class LocationManager {
     }
     save() {
         localStorage.setItem(this.storageKey, JSON.stringify(this.data));
+        window.dispatchEvent(new CustomEvent("location-updated", { detail: this.data }));
     }
     getData() {
         return this.data;
@@ -26,6 +27,7 @@ export class LocationManager {
     clear() {
         this.data = { lat: null, lon: null, pin: null, city: null };
         localStorage.removeItem(this.storageKey);
+        window.dispatchEvent(new CustomEvent("location-updated", { detail: this.data }));
     }
     async reverseGeocode(lat, lon) {
         try {

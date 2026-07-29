@@ -25,6 +25,7 @@ export class CartManager {
     saveToStorage() {
         this.calculateTotal();
         localStorage.setItem(this.storageKey, JSON.stringify(this.order));
+        window.dispatchEvent(new CustomEvent("cart-updated", { detail: this.order }));
     }
     deduplicate() {
         const uniqueItems = {};
