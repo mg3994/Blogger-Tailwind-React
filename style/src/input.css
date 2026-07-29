@@ -1,0 +1,5 @@
+@import "tailwindcss";
+
+/* Scan templates across theme and app workspaces */
+@source "../../theme/src/**/*.tsx";
+@source "../../app/src/**/*.tsx";

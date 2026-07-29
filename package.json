@@ -1,0 +1,33 @@
+{
+  "name": "workspace",
+  "version": "1.0.0",
+  "description": "Blogger and Tailwind",
+  "keywords": [
+    "blogger",
+    "blogspot"
+  ],
+  "license": "MIT",
+  "author": "Manishmg3994",
+  "type": "module",
+  "workspaces": [
+    "theme",
+    "app",
+    "style"
+  ],
+  "scripts": {
+    "build:css": "npm --prefix style run build",
+    "build": "npm run build:css && npx tsx --tsconfig tsconfig.theme.json theme/src/main.tsx"
+  },
+  "dependencies": {
+    "@antinna/blogger-theme": "^5.0.0"
+  },
+  "devDependencies": {
+    "@tailwindcss/cli": "^4.3.3",
+    "@types/node": "^26.1.2",
+    "@types/react": "^19.0.0",
+    "@types/react-dom": "^19.0.0",
+    "tailwindcss": "^4.3.3",
+    "tsx": "^4.23.1",
+    "typescript": "^7.0.2"
+  }
+}
