@@ -1,4 +1,4 @@
-/// script ==> // ,
+/// // script ==> // ,
 ///   // "build:react": "npm run build:css && npx tsx --tsconfig tsconfig.theme.json theme/src/build-react.tsx"
 
 // import * as fs from "fs";

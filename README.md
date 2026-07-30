@@ -1,5 +1,7 @@
 # 🚀 blogger-tailwind-react
 
+> Passing blogger data there in react Example
+
 A high-performance, monorepo template for building custom **Blogger (Blogspot) themes** using **React**, **Tailwind CSS**, and a custom JSX theme runtime (`@antinna/blogger-theme`).
 
 ---
