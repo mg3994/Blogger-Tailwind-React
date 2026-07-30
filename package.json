@@ -17,6 +17,7 @@
   "scripts": {
     "build:css": "npm --prefix style run build",
     "build": "npm run build:css && npx tsx --tsconfig tsconfig.theme.json theme/src/main.tsx"
+   
   },
   "dependencies": {
     "@antinna/blogger-theme": "^5.0.0"

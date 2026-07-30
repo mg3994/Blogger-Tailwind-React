@@ -1,4 +1,3 @@
-
 import * as fs from "fs";
 import * as path from "path";
 import { fileURLToPath } from "node:url";
@@ -8,7 +7,7 @@ import {
   BWidget,
   BClientScript,
   BSkin,
-  Title ,
+  Title,
   BIf,
   BIncludable,
   BInclude,
@@ -82,7 +81,11 @@ const BlogLayout = () => (
         </BWidget>
       </BSection>
 
-      <div id="react-root"></div>
+      <div
+        id="react-root"
+        expr:data-page-type="data:view.type"
+        expr:data-is-home="data:view.isHomepage"
+      ></div>
 
       <BClientScript scriptPath={REACT_APP_ENTRY} mode="cdata" />
     </main>
@@ -101,7 +104,7 @@ function buildTheme() {
       "b:layoutsversion": "3",
     },
     head: [
-      <Title id="ram">React Blogger Theme Example</Title>, 
+      <Title id="ram">React Blogger Theme Example</Title>,
       <BSkin css={OUTPUT_CSS_PATH} />,
     ],
     body: [<BlogLayout />],
